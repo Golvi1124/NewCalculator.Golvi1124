@@ -1,22 +1,22 @@
 ﻿/* 
  To improve:
-   * add even more operations?
-   * make menu nicer/cleaner
-   * power operation doesn't work
-   * handle possible null reference exceptions
-   * big/small letters for input
-   * extra coments for myself
-   * handle better getting previous results
+   * make code nicer/cleaner
+   * extra coments for more difficult parts
    * get history direcly from the Json file
     
     Improvements:
+    * Updated Regex
     * Changed that menu is at the begining of the program and only then numbers are asked for. 
-    * Didn't touch Json structure
+    * Handled big/small letters for input
     * Changed n to Q for ending the program
+    * Changed a bit Json structure how it is written and read......NOOOOT
+    * Handled better getting previous results
+    * Handled possible null reference exceptions
  */
 
 using System.Text.RegularExpressions;
 using CalculatorLibrary;
+using Newtonsoft.Json;
 
 namespace CalculatorProgram
 {
@@ -25,142 +25,188 @@ namespace CalculatorProgram
         static void Main()
         {
             bool endApp = false;
-
             Console.WriteLine("Console Calculator in C#\r");
-            Console.WriteLine("------------------------\n");
+            Console.WriteLine("-----------------------------------------\n");
 
             Calculator calculator = new Calculator();
+
             while (!endApp)
             {
+              
                 Console.WriteLine($"This calculator was used {calculator.Counter} times.");
 
-                string? numInput1 = "";
-                string? numInput2 = "";
-                double result = 0;
+                Console.WriteLine(@"
+Choose an operator from the following list:
 
-                // Ask the user to type the first number.
-
-                Console.WriteLine("For the square root and trigonometry operations, only the first number will be used. Press any key to continue:");
-                Console.ReadKey();
-
-                var getFirstNumMessage = calculator.Results.Count() == 0 ? "Type a number, and then press Enter: " : "If you'd like to use a previous result, type 'p', otherwise type a number, and then press Enter: ";
-
-                var validationErrorMessage = calculator.Results.Count() == 0 ? "This is not valid input. Please enter an integer value: " : "This is not valid input. Please enter an integer value or 'p': ";
-
-                Console.Write(getFirstNumMessage);
-
-                numInput1 = Console.ReadLine();
-
-                double cleanNum1 = 0;
-
-                while (numInput1.ToLower() != "p" && !double.TryParse(numInput1, out cleanNum1))
-                {
-                    Console.Write(validationErrorMessage);
-                    numInput1 = Console.ReadLine();
-                }
-
-                if (numInput1.ToLower() == "p")
-                {
-                    cleanNum1 = GetPreviousResult(calculator.Results);
-                }
-
-
-                // Ask the user to type the second number.
-                var getSecondNumMessage = calculator.Results.Count() == 0 ? "Type another number, and then press Enter: " : "If you'd like to use a previous result, type 'p', otherwise type a number, and then press Enter: ";
-                Console.Write(getSecondNumMessage);
-
-                numInput2 = Console.ReadLine();
-
-                double cleanNum2 = 0;
-
-                while (numInput2.ToLower() != "p" && !double.TryParse(numInput2, out cleanNum2))
-                {
-                    Console.Write(validationErrorMessage);
-                    numInput2 = Console.ReadLine();
-                }
-
-                if (numInput2.ToLower() == "p")
-                {
-                    cleanNum2 = GetPreviousResult(calculator.Results);
-                }
-
-                // Ask the user to choose an operator.
-                Console.Clear();
-                Console.WriteLine(@"Choose an operator from the following list:
-...Standart operations:
+Standard Operations:
     A - Add
     S - Subtract
     M - Multiply
     D - Divide
     V - Average
-...Advanced operations:
+Advanced Operations:
     W - Power
     R - Square Root
     N - Sine
     C - Cosine
     T - Tangent
     L - Logarithm
+Other Operations:
+    H - History
+-----------------------------------------
 ");
 
-                Console.Write("Your option? ");
-                string? opInput = Console.ReadLine();
 
-                // Validate input is not null, and matches the pattern
-                if (string.IsNullOrEmpty(opInput))
+                Console.Write("Your option? ");
+                string? opInput = Console.ReadLine()?.Trim().ToLower();
+
+                if (opInput == "h")
                 {
-                    Console.WriteLine("Error: Input cannot be empty.");
+                    ShowHistory();
+                    continue;
                 }
-                else
+
+                if (string.IsNullOrEmpty(opInput) || !Regex.IsMatch(opInput, "^[asmvdwrnctlh]$"))
                 {
-                    string op = opInput.Trim().ToLower();
-                    if (op == null || !Regex.IsMatch(op, "[a|s|m|d|v|w|r|n|c|t|l|q]"))
+                    Console.WriteLine("Error: Unrecognized input. Press any key to try again.");
+                    Console.ReadKey();
+                    continue;
+                }
+
+                double cleanNum1 = 0;
+                double cleanNum2 = 0;
+
+                // Only need one number for these operations
+                bool singleInputOp = new[] { "r", "n", "c", "t", "l" }.Contains(opInput);
+
+                var firstPrompt = calculator.Results.Count() == 0
+                    ? "Type the number for the operation and press Enter: "
+                    : "Type a number or 'p' to use a previous result, then press Enter: ";
+
+                var validationError = calculator.Results.Count() == 0
+                    ? "This is not valid input. Please enter a number: "
+                    : "Invalid input. Please enter a number or 'p': ";
+
+                Console.Write(firstPrompt);
+                string? numInput1 = Console.ReadLine();
+
+                while (numInput1?.ToLower() != "p" && !double.TryParse(numInput1, out cleanNum1))
+                {
+                    Console.Write(validationError);
+                    numInput1 = Console.ReadLine();
+                }
+
+                if (numInput1?.ToLower() == "p")
+                {
+                    cleanNum1 = GetPreviousResult(calculator.Results);
+                }
+
+                if (!singleInputOp)
+                {
+                    Console.Write("Type another number for the operation and press Enter: ");
+                    string? numInput2 = Console.ReadLine();
+
+                    while (numInput2?.ToLower() != "p" && !double.TryParse(numInput2, out cleanNum2))
                     {
-                        Console.WriteLine("Error: Unrecognized input.");
+                        Console.Write(validationError);
+                        numInput2 = Console.ReadLine();
+                    }
+
+                    if (numInput2?.ToLower() == "p")
+                    {
+                        cleanNum2 = GetPreviousResult(calculator.Results);
+                    }
+                }
+
+                try
+                {
+                    double result = calculator.DoOperation(cleanNum1, cleanNum2, opInput);
+                    if (double.IsNaN(result))
+                    {
+                        Console.WriteLine("This operation resulted in a mathematical error.");
                     }
                     else
                     {
-                        try
-                        {
-                            result = calculator.DoOperation(cleanNum1, cleanNum2, op);
-                            if (double.IsNaN(result))
-                            {
-                                Console.WriteLine("This operation will result in a mathematical error.\n");
-                            }
-                            else Console.WriteLine("Your result: {0:0.##}\n", result);
-                        }
-                        catch (Exception e)
-                        {
-                            Console.WriteLine("Oh no! An exception occurred trying to do the math.\n - Details: " + e.Message);
-                        }
+                        Console.WriteLine($"Your result: {result:0.##}\n");
                     }
                 }
+                catch (Exception e)
+                {
+                    Console.WriteLine("An exception occurred: " + e.Message);
+                }
+
                 Console.WriteLine("------------------------\n");
-
-
-
-                // Wait for the user to respond before closing.
-                Console.Write("Press 'Q' and Enter to close the app, or press any other key and Enter to continue: ");
-                if (Console.ReadLine() == "Q" || Console.ReadLine() == "q") endApp = true;
-
-                Console.WriteLine("\n"); // Friendly linespacing.
+                if (Console.ReadLine()?.Trim().ToLower() == "q") endApp = true;
             }
-            calculator.Finish();
-            return;
         }
+
 
         private static double GetPreviousResult(List<double> previousResults)
         {
-            Console.WriteLine("Type the index of the previous result:");
-
-            for (int index = 1; index < previousResults.Count; index++)
+            if (previousResults == null || !previousResults.Any())
             {
-                double result = previousResults[index - 1];
-                Console.WriteLine($"{index}: {result}");
+                Console.WriteLine("No previous results available.");
+                return 0; // Default value
             }
 
-            var userChoice = Console.ReadLine();
+            Console.WriteLine("Type the index of the previous result:");
+            for (int index = 1; index <= previousResults.Count; index++)
+            {
+                Console.WriteLine($"{index}: {previousResults[index - 1]}");
+            }
 
-            return previousResults[int.Parse(userChoice) - 1];
+            while (true)
+            {
+                string? userChoice = Console.ReadLine();
+                if (int.TryParse(userChoice, out int index) && index > 0 && index <= previousResults.Count)
+                {
+                    return previousResults[index - 1];
+                }
+                Console.WriteLine("Invalid index. Please try again.");
+            }
         }
+
+
+        private static void ShowHistory()
+        {
+            try
+            {
+                string json = File.ReadAllText("calculatorlog.json");
+                var data = JsonConvert.DeserializeObject<CalculatorLog>(json);
+
+                if (data?.Operations != null && data.Operations.Any())
+                {
+                    Console.WriteLine("\n--- Operation History ---");
+                    foreach (var op in data.Operations)
+                    {
+                        Console.WriteLine($"{op.Operation} | {op.Operand1} & {op.Operand2} => {op.Result}");
+                    }
+                    Console.WriteLine("-------------------------\n");
+                }
+                else
+                {
+                    Console.WriteLine("No operations found in history.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error reading history: " + ex.Message);
+            }
+        }
+
+        // Define a class to map the JSON structure
+        public class CalculatorLog
+        {
+            public List<OperationInfo>? Operations { get; set; }
+        }
+
+        public class OperationInfo
+        {
+            public string? Operation { get; set; }
+            public double Operand1 { get; set; }
+            public double Operand2 { get; set; }
+            public double Result { get; set; }
+        }
+
     }
 }

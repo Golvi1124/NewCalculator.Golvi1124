@@ -6,73 +6,56 @@ namespace CalculatorLibrary
     {
         public List<double> Results;
         public int Counter = 0;
-        JsonWriter writer;
+       
         public Calculator()
         {
             Results = new List<double>();
-            StreamWriter logFile = File.CreateText("calculatorlog.json");
-            logFile.AutoFlush = true; //every time the write method is called, the text will be immediately written into the file, instead of waiting for the writer to be closed
-            writer = new JsonTextWriter(logFile);
-            writer.Formatting = Newtonsoft.Json.Formatting.Indented;
-            writer.WriteStartObject();
-            writer.WritePropertyName("Operations");
-            writer.WriteStartArray();
         }
 
 
         public double DoOperation(double num1, double num2, string op)
         {
             double result = double.NaN; // Default value is "not-a-number" if an operation, such as division, could result in an error.
-            writer.WriteStartObject();
-            writer.WritePropertyName("Operand1");
-            writer.WriteValue(num1);
-            writer.WritePropertyName("Operand2");
-            writer.WriteValue(num2);
-            writer.WritePropertyName("Operation");
-
 
             // Use a switch statement to do the math.
             switch (op)
             {
                 case "a":
                     result = num1 + num2;
-                    writer.WriteValue("Add");
                     break;
 
                 case "s":
                     result = num1 - num2;
-                    writer.WriteValue("Subtract");
                     break;
 
                 case "m":
                     result = num1 * num2;
-                    writer.WriteValue("Multiply");
                     break;
 
                 case "d":
                     // Ask the user to enter a non-zero divisor.
-                    if (num2 != 0)
-                    {
-                        result = num1 / num2;
-                    }
-                    writer.WriteValue("Divide");
+                    if (num2 != 0) result = num1 / num2;
                     break;
+
                 case "v":
                     result = (num1 + num2) / 2;
-                    writer.WriteValue("Average");
                     break;
 
                 case "w":
-                    result = Math.Pow(num1, num2);
-                    writer.WriteValue("Power");
+                    if (num1 < 0 && num2 % 1 != 0)
+                    {
+                        Console.WriteLine("Cannot calculate the power of a negative base with a fractional exponent.");
+                    }
+                    else
+                    {
+                        result = Math.Pow(num1, num2);
+                    }
                     break;
-
 
                 case "r":
                     if (num1 >= 0)
                     {
                         result = Math.Sqrt(num1);
-                        writer.WriteValue("SquareRoot");
                     }
                     else
                     {
@@ -82,23 +65,19 @@ namespace CalculatorLibrary
 
                 case "n":
                     result = Math.Sin(num1);
-                    writer.WriteValue("Sin");
                     break;
 
                 case "c":
                     result = Math.Cos(num1);
-                    writer.WriteValue("Cos");
                     break;
 
                 case "t":
                     result = Math.Tan(num1);
-                    writer.WriteValue("Tan");
                     break;
                 case "l":
                     if (num1 > 0)
                     {
                         result = Math.Log(num1);
-                        writer.WriteValue("Log");
                     }
                     else
                     {
@@ -106,25 +85,52 @@ namespace CalculatorLibrary
                     }
                     break;
 
-                // Return text for an incorrect option entry.
                 default:
                     Console.WriteLine("Invalid operation.");
                     break;
             }
-            writer.WritePropertyName("Result");
-            writer.WriteValue(result);
-            writer.WriteEndObject();
+            // Log the operation to the JSON file
+            LogOperation(num1, num2, op, result);
 
             Counter++;
             Results.Add(result);
             return result;
         }
 
-        public void Finish()
+        private void LogOperation(double num1, double num2, string op, double result)
         {
-            writer.WriteEndArray();
-            writer.WriteEndObject();
-            writer.Close();
+            var operation = new
+            {
+                Operand1 = num1,
+                Operand2 = num2,
+                Operation = op,
+                Result = result
+            };
+
+            // Write to the JSON file
+            string filePath = "calculatorlog.json";
+            List<dynamic> operations;
+
+            if (File.Exists(filePath))
+            {
+                try
+                {
+                    string json = File.ReadAllText(filePath);
+                    operations = JsonConvert.DeserializeObject<List<dynamic>>(json) ?? new List<dynamic>();
+                }
+                catch (JsonException)
+                {
+                    Console.WriteLine("Error reading history: The JSON file is corrupted. Starting with a new history.");
+                    operations = new List<dynamic>();
+                }
+            }
+            else
+            {
+                operations = new List<dynamic>();
+            }
+
+            operations.Add(operation);
+            File.WriteAllText(filePath, JsonConvert.SerializeObject(operations, Formatting.Indented));
         }
     }
 }
