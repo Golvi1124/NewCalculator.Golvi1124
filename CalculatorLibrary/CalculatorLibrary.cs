@@ -1,6 +1,4 @@
-﻿using System.Formats.Asn1;
-using System.Xml;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 
 namespace CalculatorLibrary
 {
@@ -40,14 +38,17 @@ namespace CalculatorLibrary
                     result = num1 + num2;
                     writer.WriteValue("Add");
                     break;
+
                 case "s":
                     result = num1 - num2;
                     writer.WriteValue("Subtract");
                     break;
+
                 case "m":
                     result = num1 * num2;
                     writer.WriteValue("Multiply");
                     break;
+
                 case "d":
                     // Ask the user to enter a non-zero divisor.
                     if (num2 != 0)
@@ -56,7 +57,18 @@ namespace CalculatorLibrary
                     }
                     writer.WriteValue("Divide");
                     break;
-                case "sqrt":
+                case "v":
+                    result = (num1 + num2) / 2;
+                    writer.WriteValue("Average");
+                    break;
+
+                case "w":
+                    result = Math.Pow(num1, num2);
+                    writer.WriteValue("Power");
+                    break;
+
+
+                case "r":
                     if (num1 >= 0)
                     {
                         result = Math.Sqrt(num1);
@@ -67,22 +79,33 @@ namespace CalculatorLibrary
                         Console.WriteLine("Cannot calculate the square root of a negative number.");
                     }
                     break;
-                case "pow":
-                    result = Math.Pow(num1, num2);
-                    writer.WriteValue("Power");
-                    break;
-                case "sin":
+
+                case "n":
                     result = Math.Sin(num1);
                     writer.WriteValue("Sin");
                     break;
-                case "cos":
+
+                case "c":
                     result = Math.Cos(num1);
                     writer.WriteValue("Cos");
                     break;
-                case "tan":
+
+                case "t":
                     result = Math.Tan(num1);
                     writer.WriteValue("Tan");
                     break;
+                case "l":
+                    if (num1 > 0)
+                    {
+                        result = Math.Log(num1);
+                        writer.WriteValue("Log");
+                    }
+                    else
+                    {
+                        Console.WriteLine("Cannot calculate the logarithm of a non-positive number.");
+                    }
+                    break;
+
                 // Return text for an incorrect option entry.
                 default:
                     Console.WriteLine("Invalid operation.");
@@ -96,7 +119,6 @@ namespace CalculatorLibrary
             Results.Add(result);
             return result;
         }
-
 
         public void Finish()
         {

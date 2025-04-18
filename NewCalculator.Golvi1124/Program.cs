@@ -1,4 +1,21 @@
-﻿using System.Text.RegularExpressions;
+﻿/* 
+ To improve:
+   * add even more operations?
+   * make menu nicer/cleaner
+   * power operation doesn't work
+   * handle possible null reference exceptions
+   * big/small letters for input
+   * extra coments for myself
+   * handle better getting previous results
+   * get history direcly from the Json file
+    
+    Improvements:
+    * Changed that menu is at the begining of the program and only then numbers are asked for. 
+    * Didn't touch Json structure
+    * Changed n to Q for ending the program
+ */
+
+using System.Text.RegularExpressions;
 using CalculatorLibrary;
 
 namespace CalculatorProgram
@@ -8,7 +25,7 @@ namespace CalculatorProgram
         static void Main()
         {
             bool endApp = false;
-            // Display title as the C# console calculator app.
+
             Console.WriteLine("Console Calculator in C#\r");
             Console.WriteLine("------------------------\n");
 
@@ -16,8 +33,7 @@ namespace CalculatorProgram
             while (!endApp)
             {
                 Console.WriteLine($"This calculator was used {calculator.Counter} times.");
-                // Declare variables and set to empty.
-                // Use Nullable types (with ?) to match type of System.Console.ReadLine
+
                 string? numInput1 = "";
                 string? numInput2 = "";
                 double result = 0;
@@ -69,46 +85,62 @@ namespace CalculatorProgram
                 }
 
                 // Ask the user to choose an operator.
-                Console.WriteLine("Choose an operator from the following list:");
-                Console.WriteLine("\ta - Add");
-                Console.WriteLine("\ts - Subtract");
-                Console.WriteLine("\tm - Multiply");
-                Console.WriteLine("\td - Divide");
-                Console.WriteLine("\tpow - Power");
-                Console.WriteLine("\tsqrt - Square Root");
-                Console.WriteLine("\tsin - Sine");
-                Console.WriteLine("\tcos - Cosine");
-                Console.WriteLine("\ttan - Tangent");
-                Console.Write("Your option? ");
+                Console.Clear();
+                Console.WriteLine(@"Choose an operator from the following list:
+...Standart operations:
+    A - Add
+    S - Subtract
+    M - Multiply
+    D - Divide
+    V - Average
+...Advanced operations:
+    W - Power
+    R - Square Root
+    N - Sine
+    C - Cosine
+    T - Tangent
+    L - Logarithm
+");
 
-                string? op = Console.ReadLine();
+                Console.Write("Your option? ");
+                string? opInput = Console.ReadLine();
 
                 // Validate input is not null, and matches the pattern
-                if (op == null || !Regex.IsMatch(op, "[a|s|m|d]"))
+                if (string.IsNullOrEmpty(opInput))
                 {
-                    Console.WriteLine("Error: Unrecognized input.");
+                    Console.WriteLine("Error: Input cannot be empty.");
                 }
                 else
                 {
-                    try
+                    string op = opInput.Trim().ToLower();
+                    if (op == null || !Regex.IsMatch(op, "[a|s|m|d|v|w|r|n|c|t|l|q]"))
                     {
-                        result = calculator.DoOperation(cleanNum1, cleanNum2, op);
-                        if (double.IsNaN(result))
-                        {
-                            Console.WriteLine("This operation will result in a mathematical error.\n");
-                        }
-                        else Console.WriteLine("Your result: {0:0.##}\n", result);
+                        Console.WriteLine("Error: Unrecognized input.");
                     }
-                    catch (Exception e)
+                    else
                     {
-                        Console.WriteLine("Oh no! An exception occurred trying to do the math.\n - Details: " + e.Message);
+                        try
+                        {
+                            result = calculator.DoOperation(cleanNum1, cleanNum2, op);
+                            if (double.IsNaN(result))
+                            {
+                                Console.WriteLine("This operation will result in a mathematical error.\n");
+                            }
+                            else Console.WriteLine("Your result: {0:0.##}\n", result);
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine("Oh no! An exception occurred trying to do the math.\n - Details: " + e.Message);
+                        }
                     }
                 }
                 Console.WriteLine("------------------------\n");
 
+
+
                 // Wait for the user to respond before closing.
-                Console.Write("Press 'n' and Enter to close the app, or press any other key and Enter to continue: ");
-                if (Console.ReadLine() == "n") endApp = true;
+                Console.Write("Press 'Q' and Enter to close the app, or press any other key and Enter to continue: ");
+                if (Console.ReadLine() == "Q" || Console.ReadLine() == "q") endApp = true;
 
                 Console.WriteLine("\n"); // Friendly linespacing.
             }
