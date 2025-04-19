@@ -4,6 +4,7 @@ Initial task from: [Microsoft](https://learn.microsoft.com/en-us/visualstudio/ge
 ----------------------------------------------------
 My improvements:
 - Changed that menu is at the begining of the program and only then numbers are asked for.
+- Seperated code for where 1 and whre 2numbers needed for operation.
 - Handled big/small letters for input, updated Regex
 - Added quit option
 - Changed Json structure how it is written and read.
