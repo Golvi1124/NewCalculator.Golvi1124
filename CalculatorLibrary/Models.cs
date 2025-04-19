@@ -1,4 +1,4 @@
-﻿// CalculatorLibrary/Models.cs
+﻿// Logging operations, saving them to a Json file , displaying them to a user.
 namespace CalculatorLibrary
 {
     public class OperationInfo

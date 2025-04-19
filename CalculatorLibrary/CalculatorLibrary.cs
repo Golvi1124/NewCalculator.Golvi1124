@@ -6,7 +6,7 @@ namespace CalculatorLibrary
     {
         public List<double> Results;
         public int Counter = 0;
-       
+
         public Calculator()
         {
             Results = new List<double>();
@@ -16,7 +16,6 @@ namespace CalculatorLibrary
         {
             double result = double.NaN; // Default value is "not-a-number" if an operation, such as division, could result in an error.
 
-            // Use a switch statement to do the math.
             switch (op)
             {
                 case "a":
@@ -73,6 +72,7 @@ namespace CalculatorLibrary
                 case "t":
                     result = Math.Tan(num1);
                     break;
+
                 case "l":
                     if (num1 > 0)
                     {
@@ -83,6 +83,7 @@ namespace CalculatorLibrary
                         Console.WriteLine("Cannot calculate the logarithm of a non-positive number.");
                     }
                     break;
+
                 case "h":
                     result = Math.Log10(num1);
                     break;
@@ -136,6 +137,4 @@ namespace CalculatorLibrary
             File.WriteAllText(filePath, JsonConvert.SerializeObject(log, Formatting.Indented));
         }
     }
-
-   
 }

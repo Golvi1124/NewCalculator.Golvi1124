@@ -1,20 +1,4 @@
-﻿/* 
- To improve:
-   * make code nicer/cleaner
-   * extra coments for more difficult parts
-   * add quit option
-    
-    Improvements:
-    * Updated Regex
-    * Changed that menu is at the begining of the program and only then numbers are asked for. 
-    * Handled big/small letters for input
-    * Changed n to Q for ending the program
-    * Changed a bit Json structure how it is written and read.
-    * Handled better getting previous results
-    * Handled possible null reference exceptions
- */
-
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 using CalculatorLibrary;
 using Newtonsoft.Json;
 
@@ -32,9 +16,8 @@ namespace CalculatorProgram
 
             while (!endApp)
             {
-              
-                Console.WriteLine($"This calculator was used {calculator.Counter} times.");
 
+                Console.WriteLine($"This calculator was used {calculator.Counter} times.");
                 Console.WriteLine(@"
 Choose an operator from the following list:
 
@@ -73,7 +56,8 @@ Other Operations:
                     continue;
                 }
 
-                if (string.IsNullOrEmpty(opInput) || !Regex.IsMatch(opInput, "^[asmvdwrnctlh]$"))
+                // check whether the input does not match a specific pattern using regular expressions (Regex)
+                if (string.IsNullOrEmpty(opInput) || !Regex.IsMatch(opInput, "^[asmvdwrnctlh]$")) 
                 {
                     Console.WriteLine("Error: Unrecognized input. Press any key to try again.");
                     Console.ReadKey();
@@ -201,10 +185,5 @@ Other Operations:
                 Console.WriteLine("Error reading history: " + ex.Message);
             }
         }
-
-       
-        
-
     }
-   
 }
