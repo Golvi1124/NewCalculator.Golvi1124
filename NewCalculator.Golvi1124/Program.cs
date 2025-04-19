@@ -2,14 +2,14 @@
  To improve:
    * make code nicer/cleaner
    * extra coments for more difficult parts
-   * get history direcly from the Json file
+   * add quit option
     
     Improvements:
     * Updated Regex
     * Changed that menu is at the begining of the program and only then numbers are asked for. 
     * Handled big/small letters for input
     * Changed n to Q for ending the program
-    * Changed a bit Json structure how it is written and read......NOOOOT
+    * Changed a bit Json structure how it is written and read.
     * Handled better getting previous results
     * Handled possible null reference exceptions
  */
@@ -53,12 +53,19 @@ Advanced Operations:
     L - Logarithm
 Other Operations:
     H - History
+    Q - Quit the program
 -----------------------------------------
 ");
 
-
                 Console.Write("Your option? ");
                 string? opInput = Console.ReadLine()?.Trim().ToLower();
+
+                if (opInput == "q")
+                {
+                    Console.WriteLine("Goodbye!");
+                    Environment.Exit(0); // Terminates the program immediately
+
+                }
 
                 if (opInput == "h")
                 {
@@ -80,12 +87,12 @@ Other Operations:
                 bool singleInputOp = new[] { "r", "n", "c", "t", "l" }.Contains(opInput);
 
                 var firstPrompt = calculator.Results.Count() == 0
-                    ? "Type the number for the operation and press Enter: "
-                    : "Type a number or 'p' to use a previous result, then press Enter: ";
+                    ? "Write a number and press Enter: "
+                    : "Write a number or 'p' to use a previous result(can use on second number as well), then press Enter: ";
 
                 var validationError = calculator.Results.Count() == 0
-                    ? "This is not valid input. Please enter a number: "
-                    : "Invalid input. Please enter a number or 'p': ";
+                    ? "This is not valid input. Please write a number: "
+                    : "Invalid input. Please write a number or 'p': ";
 
                 Console.Write(firstPrompt);
                 string? numInput1 = Console.ReadLine();
@@ -103,7 +110,7 @@ Other Operations:
 
                 if (!singleInputOp)
                 {
-                    Console.Write("Type another number for the operation and press Enter: ");
+                    Console.Write("Write a second number and press Enter: ");
                     string? numInput2 = Console.ReadLine();
 
                     while (numInput2?.ToLower() != "p" && !double.TryParse(numInput2, out cleanNum2))
@@ -135,7 +142,8 @@ Other Operations:
                     Console.WriteLine("An exception occurred: " + e.Message);
                 }
 
-                Console.WriteLine("------------------------\n");
+                Console.WriteLine("-----------------------------------------");
+                Console.WriteLine("(Press Enter to continue.)");
                 if (Console.ReadLine()?.Trim().ToLower() == "q") endApp = true;
             }
         }
@@ -194,19 +202,9 @@ Other Operations:
             }
         }
 
-        // Define a class to map the JSON structure
-        public class CalculatorLog
-        {
-            public List<OperationInfo>? Operations { get; set; }
-        }
-
-        public class OperationInfo
-        {
-            public string? Operation { get; set; }
-            public double Operand1 { get; set; }
-            public double Operand2 { get; set; }
-            public double Result { get; set; }
-        }
+       
+        
 
     }
+   
 }

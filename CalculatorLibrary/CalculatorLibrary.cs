@@ -12,7 +12,6 @@ namespace CalculatorLibrary
             Results = new List<double>();
         }
 
-
         public double DoOperation(double num1, double num2, string op)
         {
             double result = double.NaN; // Default value is "not-a-number" if an operation, such as division, could result in an error.
@@ -84,6 +83,10 @@ namespace CalculatorLibrary
                         Console.WriteLine("Cannot calculate the logarithm of a non-positive number.");
                     }
                     break;
+                case "h":
+                    result = Math.Log10(num1);
+                    break;
+
 
                 default:
                     Console.WriteLine("Invalid operation.");
@@ -99,7 +102,7 @@ namespace CalculatorLibrary
 
         private void LogOperation(double num1, double num2, string op, double result)
         {
-            var operation = new
+            var newOperation = new OperationInfo
             {
                 Operand1 = num1,
                 Operand2 = num2,
@@ -109,28 +112,30 @@ namespace CalculatorLibrary
 
             // Write to the JSON file
             string filePath = "calculatorlog.json";
-            List<dynamic> operations;
+            CalculatorLog log;
 
             if (File.Exists(filePath))
             {
                 try
                 {
                     string json = File.ReadAllText(filePath);
-                    operations = JsonConvert.DeserializeObject<List<dynamic>>(json) ?? new List<dynamic>();
+                    log = JsonConvert.DeserializeObject<CalculatorLog>(json) ?? new CalculatorLog { Operations = new List<OperationInfo>() };
                 }
                 catch (JsonException)
                 {
-                    Console.WriteLine("Error reading history: The JSON file is corrupted. Starting with a new history.");
-                    operations = new List<dynamic>();
+                    Console.WriteLine("Error reading history: JSON corrupted. Starting new history.");
+                    log = new CalculatorLog { Operations = new List<OperationInfo>() };
                 }
             }
             else
             {
-                operations = new List<dynamic>();
+                log = new CalculatorLog { Operations = new List<OperationInfo>() };
             }
 
-            operations.Add(operation);
-            File.WriteAllText(filePath, JsonConvert.SerializeObject(operations, Formatting.Indented));
+            log.Operations.Add(newOperation);
+            File.WriteAllText(filePath, JsonConvert.SerializeObject(log, Formatting.Indented));
         }
     }
+
+   
 }
